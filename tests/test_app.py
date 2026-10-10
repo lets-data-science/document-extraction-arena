@@ -1,5 +1,6 @@
 """User-flow regression checks. Every provider call is mocked; tests spend no quota."""
 import json
+import io
 import sys
 from pathlib import Path
 from unittest import mock
@@ -55,6 +56,21 @@ def test_comparison_uses_the_same_invoices(no_api):
     text=markdown(at)
     assert '11<span> / 16' in text and '15<span> / 16' in text
     assert any('not a production accuracy ranking' in c.value for c in at.caption)
+
+def test_comparison_download_works_without_generated_summary(no_api):
+    original_read_csv = pd.read_csv
+    def read_source(path, *args, **kwargs):
+        assert Path(path).name != 'summary_same_invoices.csv', 'Generated summaries are not required by a clean clone'
+        return original_read_csv(path, *args, **kwargs)
+    with mock.patch.object(pd, 'read_csv', side_effect=read_source), mock.patch('streamlit.download_button', return_value=False) as download:
+        at = load('Compare models')
+    assert not at.exception
+    download.assert_called_once()
+    exported = original_read_csv(io.StringIO(download.call_args.args[1])).set_index('model')
+    assert set(exported.index) == {'gemini-3.1-flash-lite', 'gemini-3.6-flash'}
+    assert exported['n'].tolist() == [16, 16]
+    assert exported.loc['gemini-3.1-flash-lite', 'exact_invoice_pct'] == 68.75
+    assert exported.loc['gemini-3.6-flash', 'exact_invoice_pct'] == 93.75
 
 def test_live_perfect_answer_and_only_one_request(monkeypatch):
     at,ex=click_run(monkeypatch,fake_result((ROOT/'examples/samples/sample_01.json').read_text()))

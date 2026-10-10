@@ -30,8 +30,8 @@ The answer key records what the generator intended. That is different from provi
 
 ### Your project files · version 1.0
 
-- [Download the build-along starter](https://github.com/lets-data-science/document-extraction-arena/releases/download/v1.0.0/document-extraction-arena-starter-1.0.0.zip): Three functions to implement, focused tests, preserved evidence and recovery checkpoints. Extract into its own folder.
-- [Download the completed reference](https://github.com/lets-data-science/document-extraction-arena/releases/download/v1.0.0/document-extraction-arena-reference-1.0.0.zip): The finished local workbench. Inspect this first, then build in a separate starter folder.
+- [Download the build-along starter](https://github.com/lets-data-science/document-extraction-arena/releases/download/v1.0.1/document-extraction-arena-starter-1.0.1.zip): Three functions to implement, focused tests, preserved evidence and recovery checkpoints. Extract into its own folder.
+- [Download the completed reference](https://github.com/lets-data-science/document-extraction-arena/releases/download/v1.0.1/document-extraction-arena-reference-1.0.1.zip): The finished local workbench. Inspect this first, then build in a separate starter folder.
 - [View Document Extraction Arena on GitHub](https://github.com/lets-data-science/document-extraction-arena): The public LDS repository, contributed by Dev Suthar. Browse the completed app or download versioned starter and reference packages from Releases.
 
 **Checkpoint:** You can name the source image, predicted fields and answer key, and explain why a mismatch is not automatically an unfair or fair model failure.
@@ -50,8 +50,8 @@ Run the reference, verify the original evidence, then create a separate starter 
 
 ### Your project files · version 1.0
 
-- [Download the build-along starter](https://github.com/lets-data-science/document-extraction-arena/releases/download/v1.0.0/document-extraction-arena-starter-1.0.0.zip): Three functions to implement, focused tests, preserved evidence and recovery checkpoints. Extract into its own folder.
-- [Download the completed reference](https://github.com/lets-data-science/document-extraction-arena/releases/download/v1.0.0/document-extraction-arena-reference-1.0.0.zip): The finished local workbench. Inspect this first, then build in a separate starter folder.
+- [Download the build-along starter](https://github.com/lets-data-science/document-extraction-arena/releases/download/v1.0.1/document-extraction-arena-starter-1.0.1.zip): Three functions to implement, focused tests, preserved evidence and recovery checkpoints. Extract into its own folder.
+- [Download the completed reference](https://github.com/lets-data-science/document-extraction-arena/releases/download/v1.0.1/document-extraction-arena-reference-1.0.1.zip): The finished local workbench. Inspect this first, then build in a separate starter folder.
 - [View Document Extraction Arena on GitHub](https://github.com/lets-data-science/document-extraction-arena): The public LDS repository, contributed by Dev Suthar. Browse the completed app or download versioned starter and reference packages from Releases.
 
 Extract the reference ZIP. Open a terminal in its document-extraction-arena folder, where app.py and requirements.txt live. These are local Python files; the LDS website is the guide, not an upload service.

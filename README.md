@@ -6,7 +6,7 @@ Published by **[Let's Data Science](https://github.com/lets-data-science)**. Con
 
 ## Get the project
 
-- [Version 1.0.0 downloads](https://github.com/lets-data-science/document-extraction-arena/releases/tag/v1.0.0): choose the **starter** to implement the exercises or the **reference** to inspect the finished app. The release includes SHA-256 checksums.
+- [Version 1.0.1 downloads](https://github.com/lets-data-science/document-extraction-arena/releases/tag/v1.0.1): choose the **starter** to implement the exercises or the **reference** to inspect the finished app. The release includes SHA-256 checksums.
 - This repository contains the **completed reference**. Clone it with the commands below, then follow the setup instructions. Keep your starter in a separate folder.
 - [Seven-step build-along](docs/BUILD-ALONG.md): implementation tasks, reference answers, checks and troubleshooting in one guide.
 

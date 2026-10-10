@@ -255,8 +255,10 @@ def tab_results():
     st.subheader('Same invoices. A clearer comparison.')
     st.caption(f'Historical measurements · {len(ids)} shared hard invoices · Synthetic, one layout · Preliminary')
     cols=st.columns(2)
+    paired_rows=[]
     for col,model in zip(cols,[SMALL,BIG]):
         sub=per[per.model.eq(model)&per.id.isin(ids)&~per.api_error]
+        paired_rows.append(dict(model=model,level='level4_hard',n=len(sub),accuracy_pct=sub.accuracy.mean()*100,exact_invoice_pct=sub.exact.mean()*100,avg_seconds=sub.seconds.mean(),cost_per_invoice_usd=sub.cost_usd.mean()))
         with col:
             exact=int(sub.exact.sum())
             st.markdown(f'<div class="compare"><div class="model">{NAMES[model]}</div><div class="exact">{exact}<span> / {len(ids)} fully correct</span></div><div class="stats">Mean field score {sub.accuracy.mean()*100:.1f}%<br>{sub.seconds.mean():.2f} seconds per successful call<br>${sub.cost_usd.mean():.5f} estimated paid-tier cost per invoice</div></div>',unsafe_allow_html=True)
@@ -267,7 +269,7 @@ def tab_results():
         st.write('120 generated invoices, 30 per level. Flash-Lite answered all 120; Flash 3.6 answered the first 16 hard invoices. Both saw the same image for each paired comparison. Unanswered API requests are excluded from extraction scores and kept in a separate error log.')
         st.warning('Hard-set dates can be ambiguous and some digits are degraded. The answer key is what the generator intended, not proof that a human could read it. Review these cases before drawing a model-quality conclusion.')
         st.dataframe(pd.read_csv(RESULTS/'summary.csv'),hide_index=True,width='stretch')
-    st.download_button('Download paired results',pd.read_csv(RESULTS/'summary_same_invoices.csv').query("level == 'level4_hard'").to_csv(index=False),'paired-results.csv','text/csv')
+    st.download_button('Download paired results',pd.DataFrame(paired_rows).to_csv(index=False),'paired-results.csv','text/csv')
 
 
 def tab_how():
