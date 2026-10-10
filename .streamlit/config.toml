@@ -1,9 +1,9 @@
 [theme]
 base = "light"
-primaryColor = "#E8A33D"
-backgroundColor = "#FAF8F3"
+primaryColor = "#A16C00"
+backgroundColor = "#FFFFFF"
 secondaryBackgroundColor = "#FFFFFF"
-textColor = "#111111"
+textColor = "#181818"
 font = "sans serif"
 
 [client]
@@ -14,3 +14,5 @@ gatherUsageStats = false
 
 [server]
 maxUploadSize = 10
+
+address = "127.0.0.1"

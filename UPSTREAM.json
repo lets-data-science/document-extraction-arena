@@ -1,0 +1,8 @@
+{
+  "repository": "https://github.com/devsutharsystems/document-extraction-arena",
+  "commit": "65cf9ca5a1fbd68d097ff9536c3e2a99f110ac96",
+  "author": "Dev Suthar",
+  "license": "Apache-2.0",
+  "ldsRevision": "1.0.0",
+  "distribution": "https://github.com/lets-data-science/document-extraction-arena"
+}

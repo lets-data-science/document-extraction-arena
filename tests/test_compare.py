@@ -53,3 +53,8 @@ def test_models_option_rejects_unknown_model(monkeypatch, results):
 def test_per_level_limit_applies_to_shared_ids(monkeypatch, results):
     out = run(monkeypatch, results, "--models", "small,big", "--per-level", "2")
     assert set(out.n) == {2}
+
+
+def test_explicit_error_only_model_is_not_silently_dropped(monkeypatch, results):
+    with pytest.raises(SystemExit, match="No invoice"):
+        run(monkeypatch, results, "--models", "small,broken")

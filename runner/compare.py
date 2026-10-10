@@ -9,14 +9,14 @@ from pathlib import Path
 import pandas as pd
 
 
-def shared_invoices(df, per_level):
+def shared_invoices(df, per_level, required_models=None):
     """Per level, the first per_level sorted ids answered (no API error) by every model that
     answered at least one invoice in that level. Error-only models are skipped, not counted."""
     answered = df[~df.api_error]
     shared_by_level = {}
     for level, g in answered.groupby("level"):
         counts = g.groupby("id").model.nunique()
-        shared_by_level[level] = sorted(counts[counts == g.model.nunique()].index)[:per_level]
+        shared_by_level[level] = sorted(counts[counts == (len(required_models) if required_models else g.model.nunique())].index)[:per_level]
     return shared_by_level
 
 
@@ -27,6 +27,9 @@ def main():
     ap.add_argument("--models", help="comma-separated model names to compare (default: all models)")
     args = ap.parse_args()
 
+    wanted = None
+    if args.per_level < 1:
+        ap.error("--per-level must be positive")
     df = pd.read_csv(Path(args.results) / "per_invoice.csv")
     if args.models:
         wanted = [m.strip() for m in args.models.split(",") if m.strip()]
@@ -35,7 +38,7 @@ def main():
             raise SystemExit(f"unknown model(s) {', '.join(unknown)}; available: {', '.join(sorted(df.model.unique()))}")
         df = df[df.model.isin(wanted)]
 
-    shared_by_level = shared_invoices(df, args.per_level)
+    shared_by_level = shared_invoices(df, args.per_level, wanted)
     keep = []
     for level, ids in shared_by_level.items():
         models = sorted(df[(df.level == level) & ~df.api_error].model.unique())

@@ -3,6 +3,11 @@ import json
 import re
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from learner.normalize import to_decimal
+from learner.matching import match_rows
+from runner.validation import load_json, validate_invoice
 
 import pandas as pd
 
@@ -25,17 +30,6 @@ def norm_text(x):
     return re.sub(r"\s+", " ", str(x)).strip().lower()
 
 
-def to_decimal(x):
-    if x is None or isinstance(x, bool):
-        return None
-    if isinstance(x, (int, float)):
-        return Decimal(str(x))
-    try:
-        return Decimal(re.sub(r"[^0-9.\-]", "", str(x)))
-    except InvalidOperation:
-        return None
-
-
 def money_equal(a, b):
     da, db = to_decimal(a), to_decimal(b)
     return da is not None and db is not None and abs(da - db) < Decimal("0.005")
@@ -46,8 +40,9 @@ def parse_response(text):
         return None
     text = re.sub(r"^```(?:json)?|```$", "", text.strip(), flags=re.MULTILINE).strip()
     try:
-        obj = json.loads(text)
-    except json.JSONDecodeError:
+        obj = load_json(text)
+        validate_invoice(obj, partial=True)
+    except (ValueError, TypeError):
         return None
     return obj if isinstance(obj, dict) else None
 
@@ -55,23 +50,18 @@ def parse_response(text):
 def score_line_items(truth_items, pred_items):
     if not isinstance(pred_items, list):
         return 0.0, "line_items missing or not a list"
-    pred_by_desc = {}
-    for p in pred_items:
-        if isinstance(p, dict) and "description" in p:
-            pred_by_desc[norm_text(p["description"])] = p
-    matched = 0
-    for t in truth_items:
-        p = pred_by_desc.get(norm_text(t["description"]))
-        if (p and money_equal(p.get("quantity"), t["quantity"])
-                and money_equal(p.get("unit_price"), t["unit_price"])
-                and money_equal(p.get("amount"), t["amount"])):
-            matched += 1
-    denom = max(len(truth_items), len(pred_items))  # extra invented lines are penalised too
-    return matched / denom, f"{matched}/{len(truth_items)} lines matched, model returned {len(pred_items)}"
+    pairs = match_rows(truth_items, pred_items)
+    denom = max(len(truth_items), len(pred_items))
+    value = len(pairs) / denom if denom else 1.0
+    return value, f"{len(pairs)}/{len(truth_items)} lines matched, model returned {len(pred_items)}"
+
 
 
 def score_invoice(truth, pred):
     """Returns ({field: 0.0..1.0}, {field: explanation of what went wrong})."""
+    validate_invoice(truth)
+    if pred is not None and not isinstance(pred, dict):
+        pred = None
     scores, notes = {}, {}
     for f in SCALAR_FIELDS:
         got = None if pred is None else pred.get(f)
@@ -109,14 +99,14 @@ def main():
         if not model_dir.is_dir():
             continue
         model = model_dir.name
-        price_in, price_out = PRICES.get(model, (0, 0))
+        price = PRICES.get(model)
         for path in sorted(model_dir.glob("*.json")):
             res = json.loads(path.read_text())
             truth = json.loads((data_dir / res["level"] / f"{res['id']}.json").read_text())
             pred = parse_response(res["response_text"])
             scores, notes = score_invoice(truth, pred)
             billed_out = res["output_tokens"] + res["thinking_tokens"]  # thinking tokens are billed as output
-            cost = (res["input_tokens"] * price_in + billed_out * price_out) / 1e6
+            cost = (res["input_tokens"] * price[0] + billed_out * price[1]) / 1e6 if price else None
             rows.append({
                 "model": model, "level": res["level"], "id": res["id"],
                 "accuracy": sum(scores.values()) / len(scores),
@@ -134,6 +124,8 @@ def main():
                 failures.append({"model": model, "level": res["level"], "id": res["id"],
                                  "field": field, "detail": note})
 
+    if not rows:
+        raise SystemExit("No raw responses found. Check --raw; no result files were written.")
     df = pd.DataFrame(rows)
     out_dir.mkdir(parents=True, exist_ok=True)
     df.to_csv(out_dir / "per_invoice.csv", index=False)
@@ -149,7 +141,7 @@ def main():
         exact_invoice_pct=("exact", lambda s: round(s.mean() * 100, 1)),
         avg_seconds=("seconds", lambda s: round(s.mean(), 1)),
         cost_per_invoice_usd=("cost_usd", lambda s: round(s.mean(), 5)),
-        total_cost_usd=("cost_usd", lambda s: round(s.sum(), 4)),
+        total_cost_usd=("cost_usd", lambda s: round(s.sum(min_count=1), 4)),
         parse_errors=("parse_error", "sum"),
     ).reset_index()
     summary.to_csv(out_dir / "summary.csv", index=False)

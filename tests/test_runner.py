@@ -139,13 +139,14 @@ def test_no_retry_makes_exactly_one_request_per_invoice(data, tmp_path, monkeypa
     assert saved["error"] and "429" in saved["error"]
 
 
-def test_without_no_retry_each_invoice_makes_four_attempts(data, monkeypatch):
+def test_quota_errors_never_retry_even_if_transient_retries_enabled(data, monkeypatch):
     (data / "level4_hard" / "level4_hard_001.png").write_bytes(b"x")
     client = FakeClient()
     monkeypatch.setattr(run_models, "get_client", lambda: client)
     monkeypatch.setattr(run_models.time, "sleep", lambda s: None)
     result = run_models.extract("m", data / "level4_hard" / "level4_hard_001.png")
-    assert client.calls == 4 and result["error"]
+    assert client.calls == 1 and result["error"] == "HTTP_429"
+    assert len(result["attempts"]) == 1
 
 
 def test_min_interval_spaces_request_starts(data, tmp_path, monkeypatch):
@@ -169,3 +170,37 @@ def test_min_interval_spaces_request_starts(data, tmp_path, monkeypatch):
     run_models.main()
     gaps = [b - a for a, b in zip(starts, starts[1:])]
     assert len(starts) == 4 and all(g >= 13 for g in gaps)
+
+
+def test_transient_retry_is_bounded_and_errors_are_redacted(tmp_path, monkeypatch):
+    image = tmp_path / "a.png"
+    image.write_bytes(b"image")
+    class Unavailable(FakeClient):
+        def generate_content(self, **kwargs):
+            self.calls += 1
+            raise RuntimeError("503 unavailable key=private-example-key")
+    client = Unavailable()
+    monkeypatch.setattr(run_models.time, "sleep", lambda s: None)
+    result = run_models.extract("m", image, no_retry=False, client=client)
+    assert client.calls == 2
+    assert len(result["attempts"]) == 2
+    assert "private-example-key" not in json.dumps(result)
+    assert result["error"] == "HTTP_503"
+
+
+def test_resume_refuses_changed_image_or_prompt(tmp_path):
+    image = tmp_path / "a.png"
+    image.write_bytes(b"first")
+    first = run_models.fingerprint("m", image)
+    record = tmp_path / "a.json"
+    record.write_text(json.dumps({"error": None, "request_sha256": first}))
+    assert run_models.status(record, first) == "skip"
+    image.write_bytes(b"changed")
+    assert run_models.status(record, run_models.fingerprint("m", image)) == "stale"
+
+
+def test_sdk_retries_are_disabled(monkeypatch):
+    captured = {}
+    monkeypatch.setattr(run_models.genai, "Client", lambda **kwargs: captured.update(kwargs))
+    run_models.make_client("fake-key")
+    assert captured["http_options"].retry_options.attempts == 1

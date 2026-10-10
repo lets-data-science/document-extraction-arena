@@ -1,0 +1,10 @@
+PROMPT = (
+    "You are reading an invoice image. Return ONLY a JSON object with these keys: "
+    "invoice_number (string), "
+    "vendor (the company name that issued the invoice: name only, no address), "
+    "invoice_date (YYYY-MM-DD), "
+    "currency (ISO 4217 code such as INR, USD, EUR), "
+    "line_items (list of objects with description, quantity, unit_price, amount), "
+    "subtotal, tax, total. "
+    "All money values must be plain numbers: no currency symbols, no thousands separators."
+)

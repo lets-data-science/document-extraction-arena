@@ -1,0 +1,9 @@
+Document Extraction Arena
+Original project by Dev Suthar, 2026.
+https://github.com/devsutharsystems/document-extraction-arena
+
+LDS teaching edition: validation, deterministic matching, replay UI,
+learner checkpoints, documentation and media added by Let's Data Science, 2026.
+Licensed under Apache License 2.0. See LICENSE.
+Synthetic invoices are fictional. Original measurements and their limitations
+are preserved; no affiliation with invoice vendor names is implied.
