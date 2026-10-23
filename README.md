@@ -4,6 +4,10 @@ Build an invoice evaluator whose scores you can explain. Start with **saved, mea
 
 Published by **[Let's Data Science](https://github.com/lets-data-science)**. Contributed by **[Dev Suthar](https://github.com/devsutharsystems)** and extended for the LDS build-along. The original benchmark evidence is preserved from upstream commit `65cf9ca5a1fbd68d097ff9536c3e2a99f110ac96`. See `NOTICE`, `UPSTREAM.json` and `docs/METHODOLOGY.md`.
 
+![Document Extraction Arena comparing a model's invoice fields with the answer key](docs/media/preview.gif)
+
+**Build it step by step:** the free guide on [Let's Data Science](https://letsdatascience.com/projects/document-extraction-arena) walks through each piece, with checks you can run, hints and screen recordings.
+
 ## Get the project
 
 - [Version 1.0.1 downloads](https://github.com/lets-data-science/document-extraction-arena/releases/tag/v1.0.1): choose the **starter** to implement the exercises or the **reference** to inspect the finished app. The release includes SHA-256 checksums.
